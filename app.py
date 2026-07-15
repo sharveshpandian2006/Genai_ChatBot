@@ -4,6 +4,7 @@ from supabase import create_client
 
 # Modern Google & Classic LangChain integrations
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -24,6 +25,7 @@ if "chat_history" not in st.session_state:
 
 # 🎬 2. Safe Secrets Verification
 GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
@@ -66,7 +68,13 @@ def process_and_index_pdf(uploaded_file):
     vector_retriever = vector_db.as_retriever(search_kwargs={"k": 3})
 
     # Initialize Gemini 2.5 Flash Model Core
-    llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash", google_api_key=GOOGLE_API_KEY)
+    # llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash", google_api_key=GOOGLE_API_KEY)
+    st.info("🔥 Powering up Llama 3.3 70B on Groq LPUs...")
+    llm = ChatGroq(
+        model="llama-3.3-70b-versatile", 
+        groq_api_key=GROQ_API_KEY,
+        temperature=0.7
+    )
 
     # Build prompt configurations
     template = """You are a question bank expert chatbot. Use only the source data provided to answer the queries.
@@ -150,4 +158,3 @@ if "rag_chain" in st.session_state:
                     st.error(f"Execution boundary interrupted: {e}")
 else:
     st.warning("👈 Please supply a PDF document and build the knowledge index in the sidebar to open the query frame.")
-
